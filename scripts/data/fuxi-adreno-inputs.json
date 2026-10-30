@@ -5,7 +5,13 @@
     "gpu_node": "/soc/qcom,kgsl-3d0@3d00000",
     "gmu_node": "/soc/qcom,gmu@3d69000",
     "command_db_node": "/reserved-memory/aop_cmd_db_region@81c60000",
-    "gpu_windows": ["gmu", "rscc", "gmu_pdc", "kgsl_3d0_reg_memory", "cx_misc"]
+    "gpu_windows": [
+      "gmu",
+      "rscc",
+      "gmu_pdc",
+      "kgsl_3d0_reg_memory",
+      "cx_misc"
+    ]
   },
   "firmware": {
     "repository": "https://github.com/hanzi123-bilp/uefi-fuxi",
@@ -24,10 +30,10 @@
         "sha256": "96fee336424b139100fc60b5b45a907360e4b3936d7e1d00406b9bd80ca48473"
       },
       "qcom/sm8550/fuxi/a740_zap.mbn": {
-        "repository": "https://github.com/hanzi123-bilp/uefi-fuxi",
-        "git_blob_sha1": "1c03da277d075c1b205998d6ebcec9ccbb376351",
-        "bytes": 9040,
-        "sha256": "e05d28dd078ebdf69bb8d2c3bd574859303029bf7e11322cb9db44711ade63fa"
+        "repository": "https://github.com/yigezhong011-ops/unixnu-fuxi",
+        "git_blob_sha1": "626393afe52f647089754638a909834bd37a8604",
+        "bytes": 12088,
+        "sha256": "fd107982f9b06b40c85474c6c7288f43f77ea9b02f210df05f501cb2ee296e13"
       }
     }
   }
