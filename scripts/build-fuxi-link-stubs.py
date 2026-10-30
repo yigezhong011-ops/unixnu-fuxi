@@ -19,11 +19,24 @@ OUT = OUT if OUT.is_absolute() else (Path.cwd() / OUT)
 OUT.mkdir(parents=True, exist_ok=True)
 
 STUBS = """
+/* Link-only stubs. Every symbol here is normally provided by an archive whose
+ * build needs the prelink candidate this kernel exists to produce, so the
+ * bootstrap configuration answers them locally instead. The stubs never run:
+ * the kernel is only prelinked to become that candidate. */
 void native_legacy_display_probe(void) {}
 void boot_log_tick(void) {}
 void fuxi_usb_append(void) {}
 void fuxi_usb_debug_start(void) {}
 void sheng_pmgr_run(void) {}
+void native_mobile_graphics_client_probe(void) {}
+void native_gpu_addon_prepare(void) {}
+void native_owner_publish_boot_manifest(void) {}
+void native_verified_block_root_authorized(void) {}
+void native_verified_root_probe(void) {}
+void native_verified_block_volume_device(void) {}
+unsigned char native_ram_block_gpu_addon[16];
+unsigned char native_ram_block_volume_seed[16];
+unsigned char native_verified_block_manifest_sha384[48];
 """
 
 (OUT / 'stubs.c').write_text(STUBS)
