@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
-"""Build a stub archive for the symbols the bootstrap kernel references but whose
-real providers are archives that need a prelink candidate (chicken and egg).
-
-The kernel produced with these stubs is only used to generate the prelink
-candidate: the stubs are never meant to run.
+"""Build a link-only stub archive for the symbols whose real providers are
+archives that need a prelink candidate to build (a chicken-and-egg the bootstrap
+configuration has to break). The kernel built with these stubs is only used to
+produce the prelink candidate; the stubs never run.
 """
+import argparse
 import subprocess
 from pathlib import Path
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--out', type=Path, default=None,
+                    help='output directory (default: <repo>/build/fuxi-link-stubs)')
+args = parser.parse_args()
+
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'build/fuxi-link-stubs'
+OUT = args.out or (ROOT / 'build/fuxi-link-stubs')
+OUT = OUT if OUT.is_absolute() else (Path.cwd() / OUT)
 OUT.mkdir(parents=True, exist_ok=True)
 
 STUBS = """
-/* Link-only stubs: one definition per symbol the bootstrap configuration
- * references while its real archives need a prelink candidate to build. */
 void native_legacy_display_probe(void) {}
 void boot_log_tick(void) {}
 void fuxi_usb_append(void) {}
