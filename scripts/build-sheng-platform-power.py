@@ -2,9 +2,11 @@
 """Build the opt-in, guarded sheng original-PMGR integration instrument."""
 import hashlib
 import json
+import os
 from pathlib import Path
 import struct
 import subprocess
+import shutil
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -92,6 +94,17 @@ for segment in info['segments']:
                     relocations[section['va'] + offset] = symbols[bits & 0xffffff][0]
 entries = [relocations.get(vtable + 16 + i * 8) for i in range(340)]
 require(all(entries) and vtable + 16 + 340 * 8 not in relocations, 'Exact 340-entry provider table')
+# The prelink candidate is a qualified input that a clean checkout does not
+# carry. A bootstrap build can stage it in the device repository, which keeps it
+# across the tree rebuilds the driver performs; seed the build tree from there.
+_shared = Path(os.environ.get('UNIXNU_DEVICE') or ROOT) / 'build/native-prelink'
+if _shared.is_dir():
+    _local = ROOT / 'build/native-prelink'
+    _local.mkdir(parents=True, exist_ok=True)
+    for _entry in _shared.iterdir():
+        if _entry.is_file():
+            shutil.copy2(_entry, _local / _entry.name)
+
 reference = ROOT / 'build/native-prelink/native-owner-ufs-rootauth3-candidate.macho'
 if not reference.exists():
     # Build products are pruned: a later candidate built from the same original kernelcache has the identical original
