@@ -1,12 +1,14 @@
-# Bootstrap configuration: link without the archive chain and prelink, purely to
-# produce build/native-prelink/*-candidate.macho for the full build.
+# Bootstrap configuration: link with stubs only and prelink, purely to produce
+# build/native-prelink/*-candidate.macho for the full build. The source archives
+# are off because only the archive chain produces them, and the chain is what
+# this configuration has to bootstrap.
 CONFIG_XNU_BUILD_ARCHIVES=n
 CONFIG_XNU_BOOT_PROGRESS=n
-CONFIG_XNU_SOURCE_CORECRYPTO14=y
-CONFIG_XNU_SOURCE_PTHREAD=y
-CONFIG_XNU_ARM_DT_PLATFORM=y
-CONFIG_XNU_ARMCPU=y
-CONFIG_XNU_NATIVE_AES=y
+CONFIG_XNU_SOURCE_CORECRYPTO14=n
+CONFIG_XNU_SOURCE_PTHREAD=n
+CONFIG_XNU_ARM_DT_PLATFORM=n
+CONFIG_XNU_ARMCPU=n
+CONFIG_XNU_NATIVE_AES=n
 CONFIG_XNU_TRUST_CACHE_RUNTIME=y
 CONFIG_XNU_DT_PANIC_REGION=y
 CONFIG_XNU_NATIVE_ARCH_TIMER=y
