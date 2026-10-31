@@ -1,0 +1,26 @@
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -1790,3 +1790,23 @@
+ 	return 0;
+ }
+ #endif
++
++/*
++ * UniXNU link stubs for the fuxi port. The archives that provide these symbols
++ * are built from a prelink candidate, and the candidate comes from this very
++ * link, so the first link answers them here; the real archives replace them once
++ * the candidate exists. They return int because the call sites see the implicit
++ * declaration.
++ */
++int boot_log_tick(void) { return 0; }
++int fuxi_usb_append(void) { return 0; }
++int fuxi_usb_debug_start(void) { return 0; }
++int native_legacy_display_late_probe(void) { return 0; }
++int native_legacy_display_probe(void) { return 0; }
++int native_ram_block_gpu_addon(void) { return 0; }
++int native_ram_block_volume_seed(void) { return 0; }
++int native_verified_block_manifest_sha384(void) { return 0; }
++int native_verified_block_root_authorized(void) { return 0; }
++int native_verified_block_volume_device(void) { return 0; }
++int native_verified_root_probe(void) { return 0; }
++int sheng_pmgr_run(void) { return 0; }
