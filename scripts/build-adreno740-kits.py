@@ -53,6 +53,27 @@ import hashlib
 from fuxi_adreno_common import ensure_fuxi_firmware
 fuxi_firmware = json.loads((ROOT / 'scripts/data/fuxi-adreno-inputs.json').read_text())['firmware']
 local = ROOT / '.cache/firmware/fuxi-gpu'
+
+# Seed the firmware cache from the device repository: the runner's shared IP hits
+# GitHub's rate limit, and the blobs are pinned and shipped with the port.
+import os as _os
+import shutil as _shutil
+from pathlib import Path as _Path
+_device = _os.environ.get('UNIXNU_DEVICE')
+_candidates = []
+if _device:
+    _candidates.append(_Path(_device) / 'build/firmware/fuxi-gpu')
+_candidates.append(ROOT / '../../../../device/build/firmware/fuxi-gpu')
+for _source in _candidates:
+    if _source.is_dir():
+        for _file in _source.rglob('*'):
+            if _file.is_file():
+                _target = local / _file.relative_to(_source)
+                _target.parent.mkdir(parents=True, exist_ok=True)
+                _shutil.copy2(_file, _target)
+        print('seeded fuxi firmware cache from %s' % _source)
+        break
+
 ensure_fuxi_firmware(ROOT, local, fuxi_firmware['files'])
 pins = fuxi_firmware['files']
 embedded = [('_native_adreno_firmware_image', 'qcom/gmu_gen70200.bin'),
