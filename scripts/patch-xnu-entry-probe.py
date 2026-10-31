@@ -1,3 +1,8 @@
+import os as _os
+from pathlib import Path as _Path
+# The payload step needs the UEFI frame-buffer font; the tree is rebuilt before
+# this runs, so keep it in the device repository.
+_os.environ.setdefault("UNIXNU_UEFI", str(_Path(__file__).resolve().parents[1] / "uefi-fonts"))
 #!/usr/bin/env python3
 """Put boot-progress probes into a COPY of the source XNU kernel (never the original).
 
