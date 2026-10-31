@@ -2,6 +2,18 @@
 """Bind an owned concrete backend to the unchanged original Legacy lifecycle."""
 import hashlib
 import json
+
+def _device_candidates(root):
+    """Candidates staged in the device repository survive the tree rebuild."""
+    import os
+    from pathlib import Path as _Path
+    base = os.environ.get('UNIXNU_DEVICE')
+    if not base:
+        return []
+    directory = _Path(base) / 'build/xnu-prelink'
+    return sorted(directory.glob('native-owner-ufs-cpu-desktop-*-candidate.macho'),
+                  key=lambda f: f.stat().st_mtime) if directory.is_dir() else []
+
 from pathlib import Path
 import struct
 import subprocess
@@ -111,6 +123,7 @@ require(all(compiled) and vtable+16+358*8 not in relocations,'Exact owned 358-en
 candidate=ROOT/'build/native-prelink/native-owner-mobile-graphics-candidate.macho'
 if not candidate.exists():  # pruned: same fallback as scripts/audit-mobile-graphics-legacy.py (identical original family executable)
     later=sorted((ROOT/'build/native-prelink').glob('native-owner-ufs-cpu-desktop-*-candidate.macho'),key=lambda f:f.stat().st_mtime)
+    later=later or _device_candidates(ROOT)
     require(later,'No reference candidate available');candidate=later[-1]
 old=candidate.read_bytes();old_image=macho(old)
 names={n:v for v,group in exports(old,old_image).items() for n in group}
