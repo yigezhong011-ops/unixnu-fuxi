@@ -50,3 +50,6 @@ CONFIG_XNU_SOURCE_MOCKFS=n
 CONFIG_XNU_ZONE_PGZ_ALIGNMENT_PROBE=n
 
 # Link-only stubs for the symbols the skipped PMGR archive provided.
+
+# Stubs for symbols this port does not build (owner-root accounting, touch stats).
+CONFIG_XNU_EXTRA_LD_ARCHIVES="{tree}/kits/sheng/libFuxiLinkStubs.a"
