@@ -1,31 +1,14 @@
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
-@@ -1094,9 +1094,16 @@
- 				native_owner_root_checkpoint(autherr, owner, device);
- 			}
- #endif
-+#if defined(XNU_OWNER_ROOT_TRUST) && XNU_OWNER_ROOT_TRUST
- 			if (autherr && !owner_authorized) {
- 				panic("rootvp not authenticated after mounting");
- 			}
-+#else
-+			/* This port runs without owner-root verification: record the mount's
-+			 * authentication verdict instead of enforcing it. */
-+			(void)autherr;
-+			(void)owner_authorized;
-+#endif
- #if defined(XNU_OWNER_ROOT_TRUST) && XNU_OWNER_ROOT_TRUST
- 			{
- 				extern volatile int native_owner_root_accepted;
-@@ -1790,3 +1797,21 @@
+@@ -1790,3 +1790,21 @@
  	return 0;
  }
  #endif
 +
 +/*
-+ * Weak link stubs for the fuxi port. Some of these symbols have no
-+ * provider here at all, so they must exist in the real link as well;
-+ * force-loaded archives still override them.
++ * Weak link stubs for the fuxi port. Some of these symbols have no provider
++ * here at all, so they must exist in the real link as well; the force-loaded
++ * archives still override them.
 + */
 +__attribute__((weak)) int boot_log_tick() { return 0; }
 +__attribute__((weak)) int fuxi_usb_append() { return 0; }
