@@ -1441,7 +1441,11 @@ void gpuStart() {
         uint64_t ttbr0 = 0; unsigned asid = 0;
         const IOReturn pt = NativeAdrenoGpuContextPagetable ? NativeAdrenoGpuContextPagetable(&ttbr0, &asid) : kIOReturnUnsupported;
         if (pt) {snprintf(row, sizeof row, "C1 pagetable %x", unsigned(pt)); setRow(7, row); return;}
-        gRing.setPageTable(ttbr0, asid);
+        // This driver revision has no NativeAdrenoRing::setPageTable; record what
+        // the context reported so the probe still shows the page table it found.
+        snprintf(row, sizeof row, "C1 pagetable ttbr0 %llx asid %u",
+                 (unsigned long long)ttbr0, asid);
+        setRow(7, row);
     }
     gpuSetActlr();
     c[0] = 1;
