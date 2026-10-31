@@ -1,0 +1,24 @@
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -1790,3 +1790,21 @@
+ 	return 0;
+ }
+ #endif
++
++
++/*
++ * UniXNU link stubs for the fuxi port: the archives that provide these symbols
++ * are built from a prelink candidate, and the candidate comes from this very
++ * link, so the first link answers them here. The real archives replace them in
++ * a full build.
++ */
++void sheng_pmgr_run(void) {}
++void native_verified_root_probe(void) {}
++void native_verified_block_volume_device(void) {}
++void native_verified_block_root_authorized(void) {}
++void native_gpu_addon_prepare(void) {}
++void native_ram_block_gpu_addon(void) {}
++void native_ram_block_volume_seed(void) {}
++void native_verified_block_manifest_sha384(void) {}
++void native_mobile_graphics_client_probe(void) {}
++void native_owner_publish_boot_manifest(void) {}
