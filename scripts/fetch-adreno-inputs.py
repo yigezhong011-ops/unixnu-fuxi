@@ -1,19 +1,25 @@
 #!/usr/bin/env python3
 """Offline replacement for scripts/fetch-adreno-inputs.py: copy the pinned inputs
-staged in the device repository instead of downloading them (the runner's shared
-IP hits GitHub's rate limit)."""
+staged in the device repository (UNIXNU_DEVICE) instead of downloading them."""
 import hashlib
 import json
+import os
 import shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / '.cache/adreno-inputs'
-STAGED = Path(__file__).resolve().parents[1] / 'build/adreno-inputs'
 PINS = json.loads((ROOT / 'scripts/data/adreno-inputs.json').read_text())
 
-if not STAGED.is_dir():
-    raise SystemExit('staged Adreno inputs missing: %s' % STAGED)
+candidates = []
+device = os.environ.get('UNIXNU_DEVICE')
+if device:
+    candidates.append(Path(device) / 'build/adreno-inputs')
+candidates.append(ROOT / 'build/adreno-inputs')
+
+STAGED = next((c for c in candidates if c.is_dir()), None)
+if STAGED is None:
+    raise SystemExit('staged Adreno inputs missing; looked in %s' % [str(c) for c in candidates])
 
 CACHE.mkdir(parents=True, exist_ok=True)
 copied = 0
@@ -33,4 +39,4 @@ for section, info in PINS.items():
             if digest != expected:
                 raise SystemExit('sha256 mismatch for %s' % name)
         copied += 1
-print('staged Adreno inputs: %d files' % copied)
+print('staged Adreno inputs: %d files from %s' % (copied, STAGED))
