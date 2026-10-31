@@ -48,12 +48,12 @@ policy_obj = compile_like(policy_record, policy_source, OUT / 'BootWatchdogPolic
 progress_source = ROOT / 'kits/sheng/BootProgress.c'
 progress_obj = compile_like(shim_record, progress_source, OUT / 'BootProgress.o',
                             ['-mgeneral-regs-only', '-Wall', '-Wextra', '-Werror',
-                             '-DXNU_BOOT_PROGRESS=1',
+                             '-UXNU_BOOT_PROGRESS', '-DXNU_BOOT_PROGRESS=1',
                              '-I', str(ROOT / '.cache/xnu-work/osfmk')])
 fault_source = ROOT / 'kits/sheng/BootFaultProbe.c'
 fault_obj = compile_like(shim_record, fault_source, OUT / 'BootFaultProbe.o',
                           ['-mgeneral-regs-only', '-Wall', '-Wextra', '-Werror',
-                           '-DXNU_BOOT_PROGRESS=1',
+                           '-UXNU_BOOT_PROGRESS', '-DXNU_BOOT_PROGRESS=1',
                            '-I', str(ROOT / '.cache/xnu-work/osfmk')])
 
 archive = OUT / 'libBootProgress.a'
