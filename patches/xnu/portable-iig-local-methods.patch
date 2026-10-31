@@ -1,5 +1,5 @@
---- IOUserServer.cpp.orig	2026-10-31 10:18:13.373825925 +0900
-+++ IOUserServer.cpp.new	2026-10-31 10:18:13.414333486 +0900
+--- a/iokit/Kernel/IOUserServer.cpp
++++ b/iokit/Kernel/IOUserServer.cpp
 @@ -663,13 +663,14 @@
   * definitions, so spell out the ones the kernel actually calls.
   */
