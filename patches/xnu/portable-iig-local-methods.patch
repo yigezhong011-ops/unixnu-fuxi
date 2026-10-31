@@ -1,0 +1,19 @@
+--- IOUserServer.cpp.orig	2026-10-31 10:18:13.373825925 +0900
++++ IOUserServer.cpp.new	2026-10-31 10:18:13.414333486 +0900
+@@ -663,13 +663,14 @@
+  * definitions, so spell out the ones the kernel actually calls.
+  */
+ kern_return_t
+-IOService::UserSetProperties(OSContainer * properties)
++IOService::UserSetProperties(OSContainer * properties, OSDispatchMethod supermethod)
+ {
++	(void)supermethod;
+ 	return UserSetProperties_Impl(properties);
+ }
+ 
+ kern_return_t
+-IOService::SendIOMessageServicePropertyChange(void)
++IOService::SendIOMessageServicePropertyChange(OSDispatchMethod supermethod)
+ {
+ 	return SendIOMessageServicePropertyChange_Impl();
+ }
