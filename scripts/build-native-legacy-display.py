@@ -297,7 +297,10 @@ run(['xcrun','ar','rcs',archive,late,OUT/'original-bindings.o',OUT/'LegacyDispla
      backlight_obj,dpu_obj,backlight_class_late,dpu_stub_obj,*touch_objs])
 sources=[ROOT/'drivers/GopFramebuffer/NativeLegacyDisplay.cpp',
          ROOT/'drivers/GopFramebuffer/NativeLegacyRequest.h',source,hid_source,keystore_source,process_source,trace_source,log_source,reset_source,ROOT/'kits/sheng/BootResetCore.h',ROOT/'kits/sheng/BootUiTraceCore.h',ROOT/'kits/sheng/BootUiTraceDetails.h',
-         ROOT/'drivers/NativeHidInput/NativeHidInput.cpp',ROOT/'scripts/build-native-hid-input.py',
+         *([ROOT/'drivers/NativeHidInput/NativeHidInput.cpp']
+           if (ROOT/'drivers/NativeHidInput/NativeHidInput.cpp').exists() else []),
+         *([ROOT/'scripts/build-native-hid-input.py']
+           if (ROOT/'scripts/build-native-hid-input.py').exists() else []),
          ROOT/'drivers/NativeKeyStoreEvents/NativeKeyStoreEvents.cpp',touch_cpp,cpufreq_cpp,backlight_cpp,dpu_cpp,backlight_class_cpp,*backlight_c,
          ROOT/'kits/sheng/GeniI2c.h',ROOT/'kits/sheng/TouchBoard.h',
          ROOT/'drivers/NativeGeniSpi/GeniSpi.c',ROOT/'drivers/NativeGeniSpi/GeniSpi.h',ROOT/'drivers/NativeNovatekTouch/NvtProtocol.c',
