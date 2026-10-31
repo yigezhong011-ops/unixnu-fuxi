@@ -1,26 +1,24 @@
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
-@@ -1790,3 +1790,23 @@
+@@ -1790,3 +1790,21 @@
  	return 0;
  }
  #endif
 +
-+#if defined(XNU_BOOTSTRAP) && XNU_BOOTSTRAP
 +/*
-+ * Link stubs for the bootstrap pass only: the archives that provide these
-+ * symbols are built after the first link. The define keeps them out of the
-+ * real link, where the archives must win.
++ * Weak link stubs for the fuxi port. Some of these symbols have no
++ * provider in this port at all, so they must exist in the real link as
++ * well; the archives that are force-loaded still override them.
 + */
-+int boot_log_tick() { return 0; }
-+int fuxi_usb_append() { return 0; }
-+void fuxi_usb_debug_start(void) { }
-+void native_legacy_display_late_probe(void) { }
-+void native_legacy_display_probe(void) { }
-+int native_ram_block_gpu_addon() { return 0; }
-+int native_ram_block_volume_seed() { return 0; }
-+int native_verified_block_manifest_sha384() { return 0; }
-+int native_verified_block_root_authorized(dev_t) { return 0; }
-+int native_verified_block_volume_device() { return 0; }
-+void native_verified_root_probe(void) { }
-+void sheng_pmgr_run(void) { }
-+#endif /* XNU_BOOTSTRAP */
++__attribute__((weak)) int boot_log_tick() { return 0; }
++__attribute__((weak)) int fuxi_usb_append() { return 0; }
++__attribute__((weak)) void fuxi_usb_debug_start(void) { }
++__attribute__((weak)) void native_legacy_display_late_probe(void) { }
++__attribute__((weak)) void native_legacy_display_probe(void) { }
++__attribute__((weak)) int native_ram_block_gpu_addon(const uint8_t **, uint64_t *) { return 0; }
++__attribute__((weak)) int native_ram_block_volume_seed(const char *, dev_t *, char *, size_t, uint64_t *, uint64_t *, uint8_t *) { return 0; }
++__attribute__((weak)) int native_verified_block_manifest_sha384() { return 0; }
++__attribute__((weak)) int native_verified_block_root_authorized(dev_t) { return 0; }
++__attribute__((weak)) int native_verified_block_volume_device(const char *, dev_t *, char *, size_t) { return 0; }
++__attribute__((weak)) void native_verified_root_probe(void) { }
++__attribute__((weak)) void sheng_pmgr_run(void) { }
