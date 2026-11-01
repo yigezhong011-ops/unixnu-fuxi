@@ -255,7 +255,7 @@ run([str(reset_source) if arg==str(process_source) else str(reset_obj) if arg==s
 # kernel C flags, and the firmware object generated from the copy kept outside Git.
 cmd+=['-I',str(ROOT/'kits/sheng'),'-I',str(ROOT/'drivers/NativeGeniSpi'),'-I',str(ROOT/'drivers/NativeNovatekTouch')]
 touch_dir=OUT/'touch';touch_dir.mkdir(exist_ok=True)
-touch_cpp=ROOT/'kits/sheng/TouchProbe.cpp';touch_cpp_obj=touch_dir/'TouchProbe.o'
+touch_cpp=ROOT/'kits/sheng/FuxiTouchProbe.cpp';touch_cpp_obj=touch_dir/'FuxiTouchProbe.o'
 cpufreq_cpp=ROOT/'kits/sheng/CpuFreqProbe.cpp';cpufreq_obj=touch_dir/'CpuFreqProbe.o'
 gpupower_cpp=ROOT/'kits/sheng/GpuPowerProbe.cpp';gpupower_obj=touch_dir/'GpuPowerProbe.o'
 backlight_cpp=ROOT/'kits/sheng/BacklightProbe.cpp';backlight_obj=touch_dir/'BacklightProbe.o'
@@ -272,9 +272,9 @@ dpu_stub_obj=OUT/'FuxiDpuScanoutStubs.o'
 run([str(dpu_stub_source) if arg==str(process_source) else str(dpu_stub_obj) if arg==str(process_obj) else arg for arg in process_cmd],cwd=pr['directory'])
 run([str(gpupower_cpp) if str(arg)==str(source) else str(gpupower_obj) if str(arg)==str(OUT/'LegacyDisplayProbe.o') else arg for arg in cmd]+['-I',str(ROOT/'drivers/Adreno740'),'-I',str(ROOT/'kits/ArmSmmu4K'),'-I',str(ROOT/'kits/AdrenoFirmware'),'-I',str(ROOT/'kits/AdrenoPM4')],cwd=r['directory'])
 run([str(cpufreq_cpp) if str(arg)==str(source) else str(cpufreq_obj) if str(arg)==str(OUT/'LegacyDisplayProbe.o') else arg for arg in cmd],cwd=r['directory'])
-print(run(['python3',ROOT/'scripts/gen-touch-firmware.py'],text=True),end='')
-touch_c=[ROOT/'drivers/NativeGeniSpi/GeniSpi.c',ROOT/'drivers/NativeNovatekTouch/NvtProtocol.c',
-         ROOT/'drivers/NativeNovatekTouch/NvtTouchCore.c',ROOT/'build/native-touch/NvtFirmware.c']
+# fuxi: ST FTM5 (OddlyLabs FuxiTouchProbe) instead of sheng's Novatek NT36532E; no firmware blob.
+touch_c=[ROOT/'kits/sheng/GeniSpi.c',ROOT/'kits/sheng/FtsProtocol.c',ROOT/'kits/sheng/FtsTouchCore.c',
+         ROOT/'kits/sheng/QcomRpmh.c']
 touch_objs=[]
 for src in touch_c+backlight_c:
     obj=touch_dir/(src.stem+'.o');touch_objs.append(obj)
