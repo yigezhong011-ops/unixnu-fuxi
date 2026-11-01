@@ -274,7 +274,7 @@ run([str(gpupower_cpp) if str(arg)==str(source) else str(gpupower_obj) if str(ar
 run([str(cpufreq_cpp) if str(arg)==str(source) else str(cpufreq_obj) if str(arg)==str(OUT/'LegacyDisplayProbe.o') else arg for arg in cmd],cwd=r['directory'])
 # fuxi: ST FTM5 (OddlyLabs FuxiTouchProbe) instead of sheng's Novatek NT36532E; no firmware blob.
 touch_c=[ROOT/'kits/sheng/GeniSpi.c',ROOT/'kits/sheng/FtsProtocol.c',ROOT/'kits/sheng/FtsTouchCore.c',
-         ROOT/'kits/sheng/QcomRpmh.c']
+         ROOT/'kits/sheng/QcomRpmh.c',ROOT/'kits/sheng/FuxiTouchCompat.c']
 touch_objs=[]
 for src in touch_c+backlight_c:
     obj=touch_dir/(src.stem+'.o');touch_objs.append(obj)
