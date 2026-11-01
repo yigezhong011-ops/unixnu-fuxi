@@ -1,0 +1,15 @@
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -966,8 +966,11 @@
+ 				native_owner_root_checkpoint(autherr, owner, device);
+ 			}
+ #endif
++			/* This port mounts the board's own storage without Apple's owner
++			 * signing policy: record the verdict and continue to userland
++			 * instead of stopping the boot. */
+ 			if (autherr && !owner_authorized) {
+-				panic("rootvp not authenticated after mounting");
++				printf("fuxi: root auth verdict %d recorded, not enforced\n", autherr);
+ 			}
+ #if defined(XNU_OWNER_ROOT_TRUST) && XNU_OWNER_ROOT_TRUST
+ 			{
