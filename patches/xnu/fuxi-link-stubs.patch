@@ -1,6 +1,6 @@
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
-@@ -1790,3 +1790,23 @@
+@@ -1591,3 +1591,23 @@
  	return 0;
  }
  #endif
