@@ -1,6 +1,6 @@
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
-@@ -1591,3 +1591,23 @@
+@@ -1591,3 +1591,21 @@
  	return 0;
  }
  #endif
@@ -22,5 +22,3 @@
 +__attribute__((weak)) int native_verified_block_volume_device(const char *, dev_t *, char *, size_t) { return 0; }
 +__attribute__((weak)) void native_verified_root_probe(void) { }
 +__attribute__((weak)) void sheng_pmgr_run(void) { }
-+__attribute__((weak)) void native_owner_root_accepted_checkpoint(int, int) { }
-+__attribute__((weak)) void native_owner_root_checkpoint(int, int, dev_t) { }
