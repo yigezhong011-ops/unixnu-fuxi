@@ -71,6 +71,7 @@ for i,va in enumerate(legacy):
 runtime=ROOT/'build/darwinboot-owner-hvf-mobile-graphics-legacy-class/gdb-stop.json'
 out=ROOT/'build/display-analysis/mobile-graphics-legacy-abi.json'
 RUNTIME_SHA='3044c2beff552911605994c0dc7aa73182066cbb5aed0b396999ceeb5a96da2b'
+metadata_evidence = None
 if runtime.exists():
     d=json.loads(runtime.read_text());args=[int(v,16) for v in d['function_entry_arguments']]
     require(d['kernel_sha256']==plan['candidate_sha256'] and d['function_return_stack_matched']
@@ -78,15 +79,28 @@ if runtime.exists():
             and d['entry_kernel_bytes_match']['bytes']==b'IOMobileFramebufferLegacy\0'.hex(),
             'Actual original Legacy identity, parent and object size')
     runtime_sha=hashlib.sha256(runtime.read_bytes()).hexdigest()
+    metadata_evidence = {'kind': 'runtime-checkpoint', 'runtime_observed': True}
 else:
     # The QEMU observation of the original class (identity IOMobileFramebufferLegacy, parent 0xfffffff006b31400, object size 0x18a0)
     # was pruned. It concerns the unchanged original kernelcache, not the native kernel, so only its recorded hash is carried over.
-    require(out.exists() and json.loads(out.read_text())['runtime_metadata_checkpoint_sha256']==RUNTIME_SHA,
-            'Recorded runtime observation hash')
-    runtime_sha=RUNTIME_SHA
+    if out.exists() and json.loads(out.read_text()).get('runtime_metadata_checkpoint_sha256')==RUNTIME_SHA:
+        runtime_sha=RUNTIME_SHA
+        metadata_evidence = {'kind': 'recorded-runtime-checkpoint', 'runtime_observed': False}
+    else:
+        # A clean runner carries no historical QEMU capture. Prove the class
+        # name, singleton, parent, size and actual OSMetaClass constructor call
+        # from the unchanged original instructions instead. Never fabricate a
+        # runtime checkpoint or mark this static proof as a device observation.
+        require(plan['original_sha256']=='f18b4df865405f2a287b84977d7aca745e056d656d9fc9df1662970ce2969de7',
+                'Static metadata proof requires the exact 21H461 kernelcache')
+        from fuxi_legacy_metadata import verify_static_metadata
+        metadata_evidence = verify_static_metadata(read, names)
+        runtime_sha = None
+out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps(dict(candidate_sha256=plan['candidate_sha256'],original_sha256=plan['original_sha256'],
     original_family_text_sha256=plan['original_executable_sha256'][family],
     runtime_metadata_checkpoint_sha256=runtime_sha,
+    class_metadata_evidence=metadata_evidence,
     base_vptr=hex(base_vptr),service_vptr=hex(service_vptr),legacy_vptr=hex(legacy_vptr),
     legacy_instance_bytes=0x18a0,legacy_virtual_entries=358,abstract_slots=pure,
     inherited_generic_changes=changed,source_service_operation_overrides=0,

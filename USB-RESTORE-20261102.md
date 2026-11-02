@@ -1,0 +1,116 @@
+# fuxi USB CDC restore / USB 日志恢复
+
+Target / 目标：iPadOS 17.7.11 (21H461), iPad7,1, XNU 10063.141.1
+`d8b80295118ef25ac3a784134bcf95cd8e88109f`, format 1 / old branch.
+
+The existing UFS, GPU, PMGR, root policies and build baseline remain selected.
+`fuxi-kernel-baseline.sh` is the previous board recipe; its launcher adds a
+separate `darwin23-fuxi` USB profile. The previous three-hook USB patch is
+retained as `.disabled` and the FuxiUsbCompat archive is no longer linked.
+
+保留本板原有 UFS、GPU、PMGR、根卷策略与构建配方。旧三处 USB 挂钩停用，
+由独立 Darwin 23 配置接入 PE、中央控制台、debug/panic 和正常 worker。
+
+QcomXnuUsbDebug is pinned to the previously checked `83be5782ad7227d7d245862ce1ae3272cae14242`.
+The fuxi-only exact-stream patch permits takeover of one revalidated firmware
+USB mapping into a separate private translated DMA bank, retaining restoration
+state. It never enables global SMMU bypass. SoC resources remain the supplied
+SM8550 profile. Firmware must already own USB clocks, power, PHY and DEVICE role.
+Reset control is disabled. VID/PID is 1209:316d, serial FuxiXnuUsbDebug.
+
+采用之前检查过的驱动提交及 fuxi exact-stream 修复；只接管重新核对过的单个
+固件 USB 映射，使用独立私有转换域，并保存恢复状态。不启用全局 SMMU bypass。
+仍依赖固件已经初始化 USB 供电、时钟、PHY 和设备模式；复位控制关闭。
+
+`build-fuxi-usb-debug.py` runs transport/DMA models, builds from actual kernel
+compile records and checks the six XNU units with USB enabled and disabled.
+The final kernel must contain the driver symbols. Host checks and hardware
+enumeration/received logs are separate; no new phone test is claimed.
+
+归档步骤运行传输/DMA 模型，按真实编译记录构建，并检查六个 XNU 单元的开启/
+关闭配置。完整链接后核对驱动符号。主机检查不等同于手机枚举和日志采集成功。
+本次尚无新的实机验收结果。
+
+## Clean-runner display ABI prerequisite / 干净 CI 的显示 ABI 输入
+
+The original display audit depended on a pruned QEMU trace or a report already
+present on the developer's machine. With neither file, clean CI stopped before
+the USB archive. For the exact 21H461 cache and unchanged family executable,
+the audit can now prove the class name, singleton, parent, 0x18a0 allocation
+size and real OSMetaClass constructor import from the original initializer.
+All existing constructor, vtable and instruction checks remain. The report
+labels this as static evidence, with a null runtime-trace hash and
+`runtime_observed=false`; no runtime record is fabricated.
+
+旧检查依赖已被清理的 QEMU 记录，或开发机上残存的报告；二者均无时，干净 CI
+会在 USB 归档之前失败。现在仅对固定的 21H461 kernelcache 和保持原样的显示
+组件，从原始初始化指令核对类名、单例、父类、0x18a0 实例大小及实际构造函数
+导入。原有构造链、虚表和指令检查全部保留。报告明确标为静态证据，运行记录
+哈希为 null，`runtime_observed=false`，不伪造运行结果。
+
+Run / 复查：
+
+```sh
+python3 tests/check-legacy-metadata.py --kernelcache /path/to/kernelcache.decompressed --kit /path/to/XnuPrelink
+```
+
+The check also refuses corrupted name, size, parent, call stub and wrapper bytes.
+同时验证类名、大小、父类、调用桩和参数传递指令遭破坏时均被拒绝。
+
+USB / progress coexistence: the board progress hook returns early from
+PE_init_kprintf. A guarded board adaptation now initializes QUD before that
+return and retains the progress sink. It reverses its own edit before the
+baseline patch loop. Unknown source contexts fail closed. This has source
+checks only; phone enumeration remains untested.
+
+USB 与进度显示共存：板级 PE_init_kprintf 提前返回前初始化 QUD，保留原进度
+输出；基线补丁循环之前撤回自身改动，未知上下文拒绝应用。已做源码检查，
+尚未进行本轮手机枚举测试。编译失败日志同时保留首个错误，便于定位根因。
+
+The shared GopFramebuffer consumer also requires NATIVE_LEGACY_LEAVES and
+kLegacyVsyncClients in its generated ABI header. Emit the seven audited
+abstract leaves (excluding the two implemented methods), and the +5592 queue
+offset already checked against the unchanged original vsync sender. No
+original executable or inheritance checks are removed.
+
+共享显示驱动还需要生成头中的 NATIVE_LEGACY_LEAVES 和 kLegacyVsyncClients。
+从审计结果生成七个拒绝执行的抽象叶子；队列偏移 +5592 沿用原始 vsync
+发送指令的核验。保留原始代码与继承关系检查。
+
+
+## Local build and template packaging / 本地构建与打包
+
+The full 21H461 kernel compiled, linked and prelinked on Ubuntu-26.04.
+USB model tests, six-unit enabled/disabled integration and all five linked USB
+symbols passed. Runtime enumeration remains unverified. Kernel SHA256:
+`ff9b64922f9664a9b342d2478bc4133f70e33a1e0be7c2e65e09877032798e7e`.
+
+完整内核已在 Ubuntu-26.04 编译、链接及预链接成功。USB 模型、六文件开关
+集成及最终五个 USB 符号检查通过；尚未进行本轮实机枚举验证。
+
+Linux host steps are included in the board recipe. Both UFS and VirtioBlock
+now select the actual verified-root bundle personality. Shared GPU sources
+receive a revision-checked patch: Darwin23's real task background policy selects
+queue priority; unavailable independent GPU-role diagnostics report -1. The
+newer optional pmap mapping diagnostic is not enabled. Memory release behavior
+is retained. Board code uses the current VM interface, eleven buffer records
+and dynamic BO allocation, with obsolete fixed-pool diagnostics removed.
+
+板级配方补齐 Linux 宿主步骤；UFS 和 VirtioBlock 使用真正的 verified-root
+bundle 构建。GPU 补丁固定检查共享驱动版本，使用 Darwin23 实际后台策略，
+独立 GPU 角色不可用时记为 -1；不启用较新 pmap 可选诊断，保留内存释放流程。
+板级代码采用当前 VM 接口、11 个缓冲区记录及动态 BO 分配。
+
+`scripts/local/` preserves the workstation helpers (default workspace
+`/home/xiaomi/fuxi17-usb-local-20261102`); adjust paths for another machine.
+No SDK, firmware, signing private keys or boot binaries are stored in Git.
+工作站脚本在 scripts/local，换机器需调整默认路径。缺少 Novatek 触摸固件，
+本轮不能宣称触摸可用。
+
+`scripts/bootimage.py --template CURRENT.img --ramdisk payload.img -o boot.img`
+is a local header-v3 template packer. It preserves firmware, BootShim, DTB,
+Android parameters and payload size. The supplied t32-fast.img template produced
+boot SHA256 `eeb21ba561029eae7062233b7b025b7e8b6a136852f0dfeee86f52e650244ca3`.
+Packing checks verified the kernel readback, three trust modules, all three GPU
+executable CDHashes, fixed Apple trust inputs and unchanged Data/GPU/ADT bytes.
+该打包器保留输入模板的固件、设备树及内存保留大小；不会刷写手机。

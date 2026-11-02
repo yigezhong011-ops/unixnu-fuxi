@@ -88,8 +88,7 @@ extern "C" ShengGmuStatus ShengGmuBindMmio(ShengGmuMmio *, ShengGmuIo *) __attri
 extern "C" IOReturn NativeAdrenoGmuContextPayloads(NativeAdrenoGmuPayload out[5]) __attribute__((weak));
 extern "C" IOReturn NativeAdrenoGpuContextBringup(volatile uint8_t *, size_t, unsigned, unsigned, unsigned, unsigned, unsigned,
     unsigned, void (*)(uint32_t), NativeAdrenoGmuContextReport *) __attribute__((weak));
-extern "C" IOReturn NativeAdrenoGpuContextBuffers(NativeAdrenoGpuBuffer out[5]) __attribute__((weak));
-extern "C" IOReturn NativeAdrenoGpuContextPagetable(uint64_t *ttbr0,unsigned *asid) __attribute__((weak));
+extern "C" IOReturn NativeAdrenoGpuContextBuffers(NativeAdrenoGpuBuffer out[GpuBufferCount]) __attribute__((weak));
 extern "C" NativeAdrenoVm *NativeAdrenoGpuContextVm() __attribute__((weak));
 extern "C" IOReturn native_adreno_publish(NativeAdrenoVm *, NativeAdrenoSubmit *, NativeAdrenoRing *, const NativeAdrenoRingClock *,
     const NativeAdrenoTimer *, const NativeAdrenoAbiDeviceInfo *, uint32_t, uint32_t) __attribute__((weak));
@@ -128,7 +127,6 @@ extern "C" void armcpu_sgi_selfprobe(uint64_t *out) __attribute__((weak));
 extern "C" volatile uint32_t armcpu_core_timer[8], armcpu_core_sgi[8], armcpu_gic_boot[8];
 extern "C" IOService *native_adreno_published_service() __attribute__((weak));
 extern "C" volatile uint32_t native_adreno_wc_enabled;
-extern "C" volatile uint32_t native_adreno_pool_mib;
 extern "C" volatile uint64_t native_adreno_fence_phys;
 extern "C" const uint8_t native_adreno_sqe_firmware_image[] __attribute__((weak));
 extern "C" const uint64_t native_adreno_sqe_firmware_image_size __attribute__((weak));
@@ -373,7 +371,7 @@ int ringIdle(void *) {
 }
 OSSharedPtr<IOMemoryMap> gGpuMaps[5];
 volatile uint8_t *gGpuCpu[5];
-NativeAdrenoGpuBuffer gGpuBuffers[5];
+NativeAdrenoGpuBuffer gGpuBuffers[GpuBufferCount];
 NativeAdrenoRing gRing;
 NativeAdrenoCpInit gCpInit;
 extern "C" {
@@ -1426,10 +1424,7 @@ void gpuStart() {
     if (!NativeAdrenoGpuContextBringup || !NativeAdrenoGpuContextBuffers || !gSmmuMap) {setRow(6, "Q nolink"); return;}
     // 1. The GPU's own context bank and buffers (arm-smmu-qcom: the GPU always gets bank 0; DT iommus SIDs 0 and 1).
     NativeAdrenoGmuContextReport &q = native_gpu_context;
-    // The BO pool (one contiguous block, sheng-gpu-pool MiB, default 1536) is taken inside the bring-up, before memory fragments. int-159:
-    // with 1536 MiB no BO fell back to scattered pages (peak 782 MiB in use); with 384 MiB (int-160) 18 did, 81933 single-page spans
-    // whose attribute XNU kept setting back (123847 pages write-combined again at submissions, 766 ms).
-    {unsigned pool = 1536; PE_parse_boot_argn("sheng-gpu-pool", &pool, sizeof pool); native_adreno_pool_mib = pool;}
+    // Current shared driver allocates pageable BOs dynamically; no fixed pool.
     const IOReturn ctx = NativeAdrenoGpuContextBringup(reinterpret_cast<volatile uint8_t *>(gSmmuMap->getVirtualAddress()),
         kSmmuWindow, 0, 2, 0, 0, 1, 1, gpuCtxProgress, &q);
     // Q s<step> st<IOReturn> k<program>/<attach kit status> p<phase>e<enabled> r<route phase>v<verified> n<spans>
@@ -1439,7 +1434,9 @@ void gpuStart() {
     if (ctx) return;
     {
         uint64_t ttbr0 = 0; unsigned asid = 0;
-        const IOReturn pt = NativeAdrenoGpuContextPagetable ? NativeAdrenoGpuContextPagetable(&ttbr0, &asid) : kIOReturnUnsupported;
+        NativeAdrenoVm *contextVm = NativeAdrenoGpuContextVm ? NativeAdrenoGpuContextVm() : nullptr;
+        const IOReturn pt = contextVm ? kIOReturnSuccess : kIOReturnNotReady;
+        if (contextVm) {ttbr0 = contextVm->ttbr0(); asid = contextVm->asid();}
         if (pt) {snprintf(row, sizeof row, "C1 pagetable %x", unsigned(pt)); setRow(7, row); return;}
         // This driver revision has no NativeAdrenoRing::setPageTable; record what
         // the context reported so the probe still shows the page table it found.

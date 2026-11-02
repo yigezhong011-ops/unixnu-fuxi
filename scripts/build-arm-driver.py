@@ -95,7 +95,7 @@ if component in ('NativeAdreno', 'Adreno740'):
 result = subprocess.run(command, cwd=record['directory'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 (out / 'compile.log').write_text(result.stdout)
 if result.returncode:
-    raise SystemExit(result.stdout[-3500:])
+    raise SystemExit(result.stdout if len(result.stdout) <= 10000 else result.stdout[:6500] + '\n... full diagnostics in compile.log ...\n' + result.stdout[-3500:])
 data = destination.read_bytes()
 magic, cpu, subtype, kind, count, size = struct.unpack_from('<6I', data)
 if (magic, cpu, subtype, kind) != (0xfeedfacf, 0x100000c, 0, 1):
