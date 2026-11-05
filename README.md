@@ -69,6 +69,9 @@ Beyond the arguments the board generates, these are the fuxi-specific switches a
 | `scripts/build-fuxi-usb-debug.py` | build the `QcomXnuUsbDebug` archive |
 | `scripts/read-sheng-log.py` | decode the UFS log window pulled from userdata |
 
+The Darwin23 USB source profile, DMA takeover policy and acceptance boundaries
+are recorded in [USB restore / USB 日志恢复](USB-RESTORE-20261102.md).
+
 ## Device support
 
 The original iPadOS userland runs from the IPSW; the home screen and Settings are reached. This table records user-facing device support.

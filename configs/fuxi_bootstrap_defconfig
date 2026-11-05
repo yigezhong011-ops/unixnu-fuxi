@@ -11,7 +11,9 @@ CONFIG_XNU_ARMCPU=n
 CONFIG_XNU_NATIVE_AES=n
 CONFIG_XNU_TRUST_CACHE_RUNTIME=y
 CONFIG_XNU_DT_PANIC_REGION=y
-CONFIG_XNU_NATIVE_ARCH_TIMER=y
+# Link-only ABI reference has no ArmCpu archive. Full configuration keeps the
+# architectural timer and real ArmCpu interrupt provider enabled.
+CONFIG_XNU_NATIVE_ARCH_TIMER=n
 CONFIG_XNU_NATIVE_PAN=y
 CONFIG_XNU_NATIVE_UFS=n
 CONFIG_XNU_CRYPTO_BOOTSTRAP="prelinked"
